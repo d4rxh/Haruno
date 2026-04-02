@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0A0612" />
+    <title>Kawai Sakura</title>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='26' fill='%23FF6B9D'/><text x='50' y='70' font-family='sans-serif' font-size='52' text-anchor='middle'>🌸</text></svg>" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              background: '#0A0612',
+              surface: '#120D1C',
+              surfaceHighlight: '#1C1530',
+              primary: '#FFFFFF',
+              secondary: '#B09EC0',
+              accent: 'rgb(var(--theme-color-rgb) / <alpha-value>)',
+              sakura: '#FF6B9D',
+              blossom: '#FFB7C5',
+              petal: '#FFC8D8',
+              lavender: '#C084FC',
+            },
+            fontFamily: {
+              sans: ['Figtree', 'sans-serif'],
+              display: ['Space Grotesk', 'sans-serif'],
+            },
+            animation: {
+              'spin-slow': 'spin 14s linear infinite',
+              'marquee': 'marquee 15s linear infinite',
+              'float': 'float 5s ease-in-out infinite',
+              'pulse-sakura': 'pulse-sakura 2s ease-in-out infinite',
+              'shimmer': 'shimmer 1.8s infinite',
+              'bloom-in': 'bloom-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+            },
+            keyframes: {
+              'marquee': { '0%': { transform: 'translateX(0%)' }, '100%': { transform: 'translateX(-100%)' } },
+              'float': { '0%,100%': { transform: 'translateY(0px) rotate(0deg)' }, '50%': { transform: 'translateY(-10px) rotate(5deg)' } },
+              'pulse-sakura': { '0%,100%': { boxShadow: '0 0 0 0 rgba(255,107,157,0.4)' }, '50%': { boxShadow: '0 0 0 10px rgba(255,107,157,0)' } },
+              'bloom-in': { '0%': { transform: 'scale(0.7) rotate(-8deg)', opacity: '0' }, '100%': { transform: 'scale(1) rotate(0deg)', opacity: '1' } },
+              'shimmer': { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      ::-webkit-scrollbar { width: 4px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #FF6B9D55, #C084FC55); border-radius: 10px; }
+
+      html, body {
+        height: 100%; width: 100%;
+        background-color: #0A0612;
+        color: #fff;
+        font-family: 'Figtree', sans-serif;
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior: none;
+        user-select: none; -webkit-user-select: none;
+        overflow: hidden;
+      }
+      :root {
+        --theme-color: #FF6B9D;
+        --theme-color-rgb: 255 107 157;
+        --theme-glow: rgba(255,107,157,0.35);
+        --surface: #120D1C;
+      }
+      input, textarea { user-select: text; -webkit-user-select: text; }
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+      /* Glass morphism */
+      .glass {
+        background: rgba(255,107,157,0.06);
+        backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255,107,157,0.12);
+      }
+      .glass-dark {
+        background: rgba(10,6,18,0.88);
+        backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+        border: 1px solid rgba(255,255,255,0.06);
+      }
+      .glass-surface {
+        background: rgba(18,13,28,0.7);
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,107,157,0.1);
+      }
+
+      /* Sakura glow */
+      .sakura-glow { box-shadow: 0 0 30px rgba(255,107,157,0.45), 0 0 70px rgba(255,107,157,0.12); }
+      .sakura-glow-sm { box-shadow: 0 0 16px rgba(255,107,157,0.4); }
+      .lavender-glow { box-shadow: 0 0 20px rgba(192,132,252,0.4); }
+
+      /* Gradient text */
+      .gradient-text {
+        background: linear-gradient(135deg, #FFB7C5 0%, #FF6B9D 50%, #C084FC 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      }
+      .gradient-text-soft {
+        background: linear-gradient(135deg, #FF6B9D, #C084FC);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      }
+
+      /* Progress bar */
+      .progress-sakura { background: linear-gradient(90deg, #FF6B9D, #C084FC); }
+
+      /* Mesh gradient bg */
+      .mesh-bg {
+        background:
+          radial-gradient(ellipse at 15% 10%, rgba(255,107,157,0.10) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 85%, rgba(192,132,252,0.08) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 40%, rgba(255,183,197,0.04) 0%, transparent 55%),
+          #0A0612;
+      }
+
+      /* Skeleton shimmer */
+      .skeleton {
+        background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,107,157,0.07) 50%, rgba(255,255,255,0.04) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.8s infinite;
+        border-radius: 12px;
+      }
+
+      /* Equalizer wave bars */
+      .wave-bar { background: linear-gradient(to top, #FF6B9D, #FFB7C5); border-radius: 3px; animation: wave 1.2s ease-in-out infinite; }
+      .wave-bar:nth-child(1) { animation-delay: 0s; }
+      .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+      .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+      .wave-bar:nth-child(4) { animation-delay: 0.15s; }
+      @keyframes wave { 0%,100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+
+      /* Nav dot */
+      .nav-dot { width: 5px; height: 5px; background: #FF6B9D; border-radius: 50%; box-shadow: 0 0 8px #FF6B9D; }
+
+      /* Page transition */
+      .page-enter { animation: pageEnter 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+      @keyframes pageEnter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+      /* Floating petals */
+      @keyframes petalFall {
+        0% { transform: translateY(-30px) rotate(0deg) scale(0); opacity: 0; }
+        10% { opacity: 0.2; transform: translateY(0px) rotate(20deg) scale(1); }
+        90% { opacity: 0.1; }
+        100% { transform: translateY(110vh) rotate(380deg) scale(0.8); opacity: 0; }
+      }
+
+      input[type=range] { -webkit-appearance: none; background: transparent; }
+      input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; }
+      input[type=range]:focus { outline: none; }
+
+      /* Scrollable lyrics */
+      .lyrics-line { transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+    </style>
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "zustand": "https://esm.sh/zustand@^5.0.3",
+    "zustand/": "https://esm.sh/zustand@^5.0.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
+    "framer-motion": "https://esm.sh/framer-motion@11.15.0",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "firebase/": "https://esm.sh/firebase@^12.7.0/"
+  }
+}
+</script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
