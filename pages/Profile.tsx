@@ -1,0 +1,448 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { usePlayerStore } from '../store/playerStore';
+import { uploadToCloudinary } from '../services/api';
+import { ArrowLeft, Camera, Loader2, LogOut, Cloud, SignalHigh, SignalMedium, SignalLow, Music2, Users, ChevronRight, Mail, Shield, RotateCcw, Youtube, Library, Globe, Layers, DownloadCloud, Palette, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut" }
+  }
+};
+
+const heroVariants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { 
+    opacity: 1, 
+    scale: 1,
+    transition: { duration: 0.4, ease: "easeOut" }
+  }
+};
+
+export const Profile: React.FC = () => {
+  const { currentUser, updateUserProfile, logoutUser, streamingQuality, setStreamingQuality, favoriteArtists, musicSource, setMusicSource, themeColor, setThemeColor } = usePlayerStore();
+  const navigate = useNavigate();
+
+  const [name, setName] = useState('');
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [scrollOpacity, setScrollOpacity] = useState(0);
+  
+  // App Update State
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const currentVersion = "2.4.0";
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (currentUser) {
+      setName(currentUser.name);
+      setImagePreview(currentUser.image || null);
+    } else {
+      navigate('/login');
+    }
+  }, [currentUser, navigate]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+        const opacity = Math.min(window.scrollY / 200, 1);
+        setScrollOpacity(opacity);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    
+    setLoading(true);
+    try {
+      let imageUrl = imagePreview;
+      if (imageFile) {
+        imageUrl = await uploadToCloudinary(imageFile);
+      }
+      updateUserProfile(name, imageUrl || undefined);
+      await new Promise(r => setTimeout(r, 800)); // UX delay
+      alert('Profile updated');
+    } catch (error) {
+      console.error("Failed to update profile", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    if(window.confirm('Are you sure you want to log out?')) {
+        logoutUser();
+        navigate('/');
+    }
+  };
+
+  const handleCheckUpdate = () => {
+      setCheckingUpdate(true);
+      setTimeout(() => {
+          setCheckingUpdate(false);
+          // Simulate 50/50 chance of update for demo
+          const isAvailable = Math.random() > 0.5;
+          setUpdateAvailable(isAvailable);
+          if (!isAvailable) {
+              alert("You are already on the latest version.");
+          }
+      }, 2000);
+  };
+
+  const handleUpdate = () => {
+      if (confirm("Install update and restart?")) {
+          window.location.reload();
+      }
+  };
+
+  if (!currentUser) return null;
+
+  return (
+    <div className="min-h-full bg-[#121212] text-white pb-32 relative isolate">
+       
+      {/* Background Gradient */}
+      <div className="absolute top-0 left-0 right-0 h-[400px] bg-gradient-to-b from-[#535353] to-[#121212] -z-10" />
+
+      {/* Sticky Header */}
+      <div 
+        className="sticky top-0 z-40 px-6 py-4 flex items-center justify-between transition-colors duration-200"
+        style={{ backgroundColor: `rgba(18, 18, 18, ${scrollOpacity})` }}
+      >
+          <button 
+              onClick={() => navigate(-1)} 
+              className="w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors"
+          >
+              <ArrowLeft size={20} />
+          </button>
+          <span 
+            className="font-bold text-sm opacity-0 transition-opacity duration-300"
+            style={{ opacity: scrollOpacity }}
+          >
+            {name}
+          </span>
+          <div className="flex items-center gap-2">
+            <button 
+                onClick={() => window.location.reload()}
+                className="w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors"
+                title="Restart App"
+            >
+                <RotateCcw size={16} />
+            </button>
+            <button 
+                onClick={handleLogout}
+                className="w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors"
+                title="Log Out"
+            >
+                <LogOut size={16} />
+            </button>
+          </div>
+      </div>
+
+      <motion.div 
+        className="max-w-3xl mx-auto px-6 flex flex-col gap-8 -mt-2"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+          
+          {/* Hero Profile Section */}
+          <motion.div 
+            variants={heroVariants}
+            className="flex flex-col items-center gap-6"
+          >
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="relative w-48 h-48 md:w-56 md:h-56 rounded-full shadow-[0_8px_40px_rgba(0,0,0,0.5)] group cursor-pointer"
+              >
+                 {imagePreview ? (
+                    <img src={imagePreview} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                 ) : (
+                    <div className="w-full h-full rounded-full bg-[#282828] flex items-center justify-center text-6xl font-bold text-white/20">
+                        {name.charAt(0).toUpperCase()}
+                    </div>
+                 )}
+                 
+                 <div className="absolute inset-0 bg-black/50 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px]">
+                     <Camera size={32} className="text-white mb-2" />
+                     <span className="text-xs font-bold uppercase tracking-widest">Edit Photo</span>
+                 </div>
+                 <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.5, type: "tween", ease: "backOut" }}
+                    className="absolute bottom-2 right-4 bg-accent text-black p-2 rounded-full border-4 border-[#121212]"
+                 >
+                    <Cloud size={16} />
+                 </motion.div>
+              </div>
+              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
+
+              <div className="flex flex-col items-center gap-2 w-full">
+                  <input 
+                    type="text" 
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="bg-transparent text-center text-4xl md:text-5xl font-black text-white outline-none border-b border-transparent focus:border-white/20 pb-1 w-full max-w-md transition-all placeholder-white/20"
+                    placeholder="Name"
+                  />
+                  <motion.div 
+                    variants={itemVariants}
+                    className="flex items-center gap-6 text-sm font-bold text-white/70 mt-2"
+                  >
+                      <div className="flex flex-col items-center">
+                          <span className="text-white">12</span>
+                          <span className="text-[10px] uppercase tracking-wider">Playlists</span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                          <span className="text-white">148</span>
+                          <span className="text-[10px] uppercase tracking-wider">Followers</span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                          <span className="text-white">23</span>
+                          <span className="text-[10px] uppercase tracking-wider">Following</span>
+                      </div>
+                  </motion.div>
+              </div>
+          </motion.div>
+
+          <form onSubmit={handleSave} className="flex flex-col gap-6 mt-4">
+              
+              {/* Account Card */}
+              <motion.div variants={itemVariants} className="bg-[#181818] p-5 rounded-lg">
+                   <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                      <Shield size={20} className="text-accent"/> Account
+                   </h3>
+                   <div className="flex items-center gap-4 text-sm">
+                      <div className="p-3 bg-[#2A2A2A] rounded-full text-[#B3B3B3]">
+                          <Mail size={20} />
+                      </div>
+                      <div className="flex flex-col flex-1">
+                          <span className="text-xs text-[#B3B3B3] font-bold uppercase tracking-wider">Email</span>
+                          <span className="text-white/80 font-medium">{currentUser.email}</span>
+                      </div>
+                      <span className="px-3 py-1 bg-[#2A2A2A] rounded-full text-[10px] font-bold text-[#B3B3B3]">PRIVATE</span>
+                   </div>
+              </motion.div>
+
+              {/* Taste Profile */}
+              <motion.div 
+                  variants={itemVariants}
+                  onClick={() => navigate('/artists/select')}
+                  className="bg-[#181818] p-5 rounded-lg cursor-pointer hover:bg-[#202020] transition-colors group"
+              >
+                   <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-lg font-bold flex items-center gap-2">
+                            <Users size={20} className="text-accent"/> Taste Profile
+                        </h3>
+                        <ChevronRight className="text-[#555] group-hover:text-white transition-colors" />
+                   </div>
+                   <p className="text-sm text-[#B3B3B3] mb-4">Manage the artists you follow to improve recommendations.</p>
+                   
+                   <div className="flex items-center gap-2 overflow-hidden">
+                       {favoriteArtists.slice(0, 5).map((artist, i) => (
+                           <div key={artist.id} className="w-10 h-10 rounded-full bg-[#333] overflow-hidden border border-black relative" style={{ zIndex: 5 - i }}>
+                               <img src={artist.image[0]?.url} className="w-full h-full object-cover" alt=""/>
+                           </div>
+                       ))}
+                       {favoriteArtists.length > 5 && (
+                           <div className="w-10 h-10 rounded-full bg-[#2A2A2A] flex items-center justify-center text-xs font-bold text-white border border-black z-0">
+                               +{favoriteArtists.length - 5}
+                           </div>
+                       )}
+                       {favoriteArtists.length === 0 && <span className="text-sm font-bold text-accent">Select Artists</span>}
+                   </div>
+              </motion.div>
+
+               {/* Music Source Selection */}
+               <motion.div variants={itemVariants} className="bg-[#181818] p-5 rounded-lg">
+                   <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                      <Globe size={20} className="text-accent"/> Music Source
+                   </h3>
+                   <div className="flex flex-col gap-2">
+                      {[
+                          { val: 'both', label: 'Hybrid (Recommended)', sub: 'Results from both sources', Icon: Layers },
+                          { val: 'youtube', label: 'YouTube Music', sub: 'Extensive library from YT', Icon: Youtube },
+                          { val: 'local', label: 'Local Library', sub: 'High quality official tracks', Icon: Library },
+                      ].map((opt) => (
+                          <button
+                            key={opt.val}
+                            type="button"
+                            onClick={() => setMusicSource(opt.val as any)}
+                            className={`flex items-center p-3 rounded-md transition-all ${
+                                musicSource === opt.val 
+                                ? 'bg-[#2A2A2A] ring-1 ring-accent' 
+                                : 'hover:bg-[#2A2A2A]/50'
+                            }`}
+                          >
+                              <div className={`p-2 rounded-full mr-4 ${streamingQuality === opt.val ? 'text-accent' : 'text-[#555]'}`}>
+                                  <opt.Icon size={20} />
+                              </div>
+                              <div className="flex flex-col items-start flex-1">
+                                  <span className={`text-sm font-bold ${musicSource === opt.val ? 'text-white' : 'text-white/70'}`}>{opt.label}</span>
+                                  <span className="text-xs text-[#555]">{opt.sub}</span>
+                              </div>
+                              {musicSource === opt.val && <div className="w-3 h-3 bg-accent rounded-full shadow-[0_0_10px_var(--theme-color)]"></div>}
+                          </button>
+                      ))}
+                   </div>
+              </motion.div>
+
+              {/* Audio Quality */}
+              <motion.div variants={itemVariants} className="bg-[#181818] p-5 rounded-lg">
+                   <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                      <Music2 size={20} className="text-accent"/> Audio Quality
+                   </h3>
+                   <div className="flex flex-col gap-2">
+                      {[
+                          { val: 'low', label: 'Low (48kbps)', sub: 'Best for saving data', Icon: SignalLow },
+                          { val: 'normal', label: 'Normal (96kbps)', sub: 'Standard balance', Icon: SignalMedium },
+                          { val: 'high', label: 'High (320kbps)', sub: 'Best listening experience', Icon: SignalHigh },
+                      ].map((opt) => (
+                          <button
+                            key={opt.val}
+                            type="button"
+                            onClick={() => setStreamingQuality(opt.val as any)}
+                            className={`flex items-center p-3 rounded-md transition-all ${
+                                streamingQuality === opt.val 
+                                ? 'bg-[#2A2A2A] ring-1 ring-accent' 
+                                : 'hover:bg-[#2A2A2A]/50'
+                            }`}
+                          >
+                              <div className={`p-2 rounded-full mr-4 ${streamingQuality === opt.val ? 'text-accent' : 'text-[#555]'}`}>
+                                  <opt.Icon size={20} />
+                              </div>
+                              <div className="flex flex-col items-start flex-1">
+                                  <span className={`text-sm font-bold ${streamingQuality === opt.val ? 'text-white' : 'text-white/70'}`}>{opt.label}</span>
+                                  <span className="text-xs text-[#555]">{opt.sub}</span>
+                              </div>
+                              {streamingQuality === opt.val && <div className="w-3 h-3 bg-accent rounded-full shadow-[0_0_10px_var(--theme-color)]"></div>}
+                          </button>
+                      ))}
+                   </div>
+              </motion.div>
+
+              {/* Theme Color */}
+              <motion.div variants={itemVariants} className="bg-[#181818] p-5 rounded-lg">
+                   <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                      <Palette size={20} className="text-accent"/> Theme Color
+                   </h3>
+                   <div className="flex flex-wrap gap-3">
+                      {[
+                          { color: '#FF6B9D', name: 'Sakura Pink' }, { color: '#C084FC', name: 'Lavender' },
+                          { color: '#1D4ED8', name: 'Blue' },
+                          { color: '#E11D48', name: 'Rose' },
+                          { color: '#D97706', name: 'Amber' },
+                          { color: '#FF6B9D', name: 'Purple' },
+                          { color: '#06B6D4', name: 'Cyan' },
+                          { color: '#EC4899', name: 'Pink' },
+                          { color: '#F97316', name: 'Orange' },
+                      ].map((theme) => (
+                          <button
+                            key={theme.color}
+                            type="button"
+                            onClick={() => setThemeColor(theme.color)}
+                            className={`w-12 h-12 rounded-full transition-all flex items-center justify-center ${
+                                themeColor === theme.color 
+                                ? 'ring-2 ring-white scale-110 shadow-lg' 
+                                : 'hover:scale-105 hover:ring-2 hover:ring-white/50'
+                            }`}
+                            style={{ backgroundColor: theme.color }}
+                            title={theme.name}
+                          >
+                              {themeColor === theme.color && <div className="w-4 h-4 bg-white rounded-full shadow-sm"></div>}
+                          </button>
+                      ))}
+                   </div>
+              </motion.div>
+              
+              {/* App Updates Section */}
+              <motion.div variants={itemVariants} className="bg-[#181818] p-5 rounded-lg">
+                   <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                      <DownloadCloud size={20} className="text-accent"/> App Updates
+                   </h3>
+                   <div className="flex items-center justify-between bg-[#2A2A2A] p-4 rounded-md">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-white font-bold text-sm">Version {currentVersion}</span>
+                            <span className={`text-xs flex items-center gap-1 ${updateAvailable ? 'text-accent' : 'text-[#B3B3B3]'}`}>
+                                {updateAvailable ? <><Sparkles size={12} /> New version 2.5.0 available</> : 'You are up to date'}
+                            </span>
+                        </div>
+                        <button 
+                            type="button"
+                            onClick={updateAvailable ? handleUpdate : handleCheckUpdate}
+                            disabled={checkingUpdate}
+                            className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all flex items-center gap-2 ${
+                                updateAvailable 
+                                ? 'bg-accent text-black hover:scale-105 shadow-lg shadow-green-500/20' 
+                                : 'bg-white/10 text-white hover:bg-white/20'
+                            }`}
+                        >
+                            {checkingUpdate ? (
+                                <><Loader2 size={14} className="animate-spin" /> Checking...</>
+                            ) : updateAvailable ? (
+                                'Update Now'
+                            ) : (
+                                'Check for Updates'
+                            )}
+                        </button>
+                   </div>
+                   {updateAvailable && (
+                       <motion.div 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        className="mt-4 text-xs text-[#B3B3B3] bg-[#222] p-3 rounded-md"
+                       >
+                           <p className="font-bold text-white mb-1">What's New in 2.5.0:</p>
+                           <ul className="list-disc pl-4 space-y-1">
+                               <li>Improved audio engine for cleaner bass</li>
+                               <li>New "Sleep Timer" feature in player</li>
+                               <li>Bug fixes and performance improvements</li>
+                           </ul>
+                       </motion.div>
+                   )}
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="flex justify-center pt-4 pb-8">
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="bg-white text-black font-bold py-3.5 px-12 rounded-full hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                  >
+                     {loading ? <Loader2 size={20} className="animate-spin" /> : 'Save Changes'}
+                  </button>
+              </motion.div>
+
+          </form>
+
+      </motion.div>
+    </div>
+  );
+};
